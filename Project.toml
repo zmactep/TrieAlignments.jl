@@ -1,0 +1,7 @@
+name = "TrieAlign"
+uuid = "37a27a07-df4a-4be9-b529-7e56a2695372"
+authors = ["Pavel Yakovlev <pavel@yakovlev.me>"]
+version = "0.1.0"
+
+[deps]
+BioAlignments = "00701ae9-d1dc-5365-b64a-a3a3ebf5695e"
