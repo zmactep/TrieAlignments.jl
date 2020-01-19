@@ -25,10 +25,11 @@ isfork(n::TrieNode{C,T}) where {C,T} = length(n.children) > 1
 
 isroot(n::TrieNode{C, T}) where {C, T} = n.parent == 0
 
-struct Trie{C,T}
+mutable struct Trie{C,T}
     nodes::Vector{TrieNode{C,T}}
+    max_depth::UInt
 
-    Trie{C,T}() where {C,T} = new([TrieNode{C,T}()])
+    Trie{C,T}() where {C,T} = new([TrieNode{C,T}()], 0)
 end
 
 Trie() = Trie{Char,Any}()
@@ -51,6 +52,9 @@ function Base.push!(t::Trie{C,T}, key, value::T) where {C,T}
             node[c] = length(t)
         end
         node_id = node[c]
+    end
+    if t.max_depth < length(key)
+        t.max_depth = length(key)
     end
     t[node_id].value = value
 end
