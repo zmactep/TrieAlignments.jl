@@ -42,9 +42,10 @@ function traceback(::GlobalAlignment, matrix::AlignmentMatrix, s, t)
 
     @start_traceback
     while i > 1 || j > 1
-        if matrix.match[i, j] == matrix.delete[i, j]
+        println(i, " ", j)
+        if i == 1 || matrix.match[i, j] == matrix.delete[i, j]
             @anchor OP_DELETE
-        elseif matrix.match[i, j] == matrix.insert[i, j]
+        elseif j == 1 || matrix.match[i, j] == matrix.insert[i, j]
             @anchor OP_INSERT
         else
             if s[i - 1] == t[j - 1]
@@ -92,44 +93,43 @@ function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t)
     PairwiseAlignmentResult(score, true, AlignedSequence(s, anchors), t)
 end
 
-function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t)
-    score = 0
-    i, j  = Int(0), Int(0)
-    for i_ in 1:matrix.real_height
-        if matrix.match[i_, matrix.real_width] > score
-            score = matrix.match[i_, matrix.real_width]
-            i = i_
-            j = matrix.real_width
-        end
-    end
-    for j_ in 1:matrix.real_width
-        if matrix.match[matrix.real_height, j_] > score
-            score = matrix.match[matrix.real_height, j_]
-            i = matrix.real_height
-            j = j_
-        end
-    end
-    # make insertion/deletion anchor
-    last_anchor = AlignmentAnchor((i - 1, j - 1), i == matrix.real_height ? OP_DELETE : OP_INSERT)
-
-    anchors = Vector{AlignmentAnchor}()
-
-    @start_traceback
-    while matrix.match[i, j] != 0 && (i > 1 || j > 1)
-        if matrix.match[i, j] == matrix.delete[i, j]
-            @anchor OP_DELETE
-        elseif matrix.match[i, j] == matrix.insert[i, j]
-            @anchor OP_INSERT
-        else
-            if s[i - 1] == t[j - 1]
-                @anchor OP_SEQ_MATCH
-            else
-                @anchor OP_SEQ_MISMATCH
-            end
-        end
-    end
-    @finish_traceback
-    push!(anchors, last_anchor)
-
-    PairwiseAlignmentResult(score, true, AlignedSequence(s, anchors), t)
-end
+# function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t)
+#     score = 0
+#     i, j  = 0, 0
+#     for i_ in 1:matrix.real_height
+#         if matrix.match[i_, matrix.real_width] > score
+#             score = matrix.match[i_, matrix.real_width]
+#             i = i_
+#             j = matrix.real_width
+#         end
+#     end
+#     for j_ in 1:matrix.real_width
+#         if matrix.match[matrix.real_height, j_] > score
+#             score = matrix.match[matrix.real_height, j_]
+#             i = matrix.real_height
+#             j = j_
+#         end
+#     end
+#
+#     anchors = Vector{AlignmentAnchor}()
+#
+#     @start_traceback
+#     last_anchor = AlignmentAnchor((i - 1, j - 1), i == matrix.real_height ? OP_DELETE : OP_INSERT)
+#     while matrix.match[i, j] != 0 && (i > 1 || j > 1)
+#         if i == 1 || matrix.match[i, j] == matrix.delete[i, j]
+#             @anchor OP_DELETE
+#         elseif j == 1 || matrix.match[i, j] == matrix.insert[i, j]
+#             @anchor OP_INSERT
+#         else
+#             if s[i - 1] == t[j - 1]
+#                 @anchor OP_SEQ_MATCH
+#             else
+#                 @anchor OP_SEQ_MISMATCH
+#             end
+#         end
+#     end
+#     @finish_traceback
+#     push!(anchors, last_anchor)
+#
+#     PairwiseAlignmentResult(score, true, AlignedSequence(s, anchors), t)
+# end

@@ -3,13 +3,16 @@ TrieNodeID = UInt
 mutable struct TrieNode{C,T}
     value::Union{T,Nothing}
     parent::TrieNodeID
+    terminal::Bool
     children::Dict{C,TrieNodeID}
 
-    TrieNode{C,T}(parent = 0) where {C,T} = new(nothing, parent, Dict{C,TrieNodeID}())
+    TrieNode{C,T}(parent = 0) where {C,T} = new(nothing, parent, false, Dict{C,TrieNodeID}())
 end
 
 function Base.setproperty!(n::TrieNode{C,T}, name::Symbol, v) where {C,T}
-    name == :value || error("setfield! immutable struct of type TrieNode cannot be changed")
+    if name != :value && name != :terminal
+        error("setfield! immutable struct of type TrieNode cannot be changed")
+    end
     setfield!(n, name, v)
 end
 
@@ -24,6 +27,10 @@ isleaf(n::TrieNode{C,T}) where {C,T} = isempty(n.children)
 isfork(n::TrieNode{C,T}) where {C,T} = length(n.children) > 1
 
 isroot(n::TrieNode{C, T}) where {C, T} = n.parent == 0
+
+isterminal(n::TrieNode{C, T}) where {C, T} = n.terminal
+
+value(n::TrieNode{C, T}) where {C, T} = n.value
 
 mutable struct Trie{C,T}
     nodes::Vector{TrieNode{C,T}}
@@ -56,6 +63,7 @@ function Base.push!(t::Trie{C,T}, key, value::T) where {C,T}
     if t.max_depth < length(key)
         t.max_depth = length(key)
     end
+    t[node_id].terminal = true
     t[node_id].value = value
 end
 

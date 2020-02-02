@@ -29,16 +29,18 @@ function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, se
         current_sequence[current_depth] = char
         wstep!(altype, matrix, model, sequence, char)
 
+        if isterminal(node)
+            sequence2 = current_sequence[1:current_depth]
+            push!(results, traceback(altype, matrix, sequence, sequence2))
+        end
+
         if isfork(node) || isleaf(node)
             push!(depth_stack, (node_id, last_depth))
             last_depth = 0
 
             if isleaf(node)
                 was_leaf = true
-                sequence2 = current_sequence[1:current_depth]
-                push!(results, traceback(altype, matrix, sequence, sequence2))
             end
-
         end
     end
     return results
