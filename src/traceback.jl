@@ -42,7 +42,6 @@ function traceback(::GlobalAlignment, matrix::AlignmentMatrix, s, t)
 
     @start_traceback
     while i > 1 || j > 1
-        println(i, " ", j)
         if i == 1 || matrix.match[i, j] == matrix.delete[i, j]
             @anchor OP_DELETE
         elseif j == 1 || matrix.match[i, j] == matrix.insert[i, j]

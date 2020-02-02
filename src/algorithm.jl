@@ -16,7 +16,7 @@ function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, se
     for (char, node_id) in trie
         node = trie[node_id]
         if was_leaf
-            while last(depth_stack)[1] != node.parent
+          while length(depth_stack) > 0 && last(depth_stack)[1] != node.parent
                 _, count = pop!(depth_stack)
                 wpop!(matrix, count)
                 current_depth -= count
