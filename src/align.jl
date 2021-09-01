@@ -24,9 +24,9 @@ function wpop!(matrix::AlignmentMatrix, count::Int)
     matrix.real_width -= count
 end
 
-# Fill cells by Needleman-Wunsch
+# Fill insert and delete cells
 
-macro fill_matrix_nw(i, j)
+macro fill_matrix(i, j)
     esc(quote
         matrix.insert[i, j] = model.gap_extend +
                               max(matrix.insert[i - 1, j],
@@ -35,25 +35,23 @@ macro fill_matrix_nw(i, j)
         matrix.delete[i, j] = model.gap_extend +
                               max(matrix.delete[i, j - 1],
                                   matrix.match[i, j - 1] + model.gap_open)
+    end)
+end
 
+# Fill match cells by Needleman-Wunsch
+
+macro fill_matrix_nw(i, j)
+    esc(quote
         matrix.match[i, j] = max(matrix.insert[i, j],
                                  matrix.delete[i, j],
                                  matrix.match[i - 1, j - 1] + model.submat[c, d])
     end)
 end
 
-# Fill cells by Smith-Waterman
+# Fill match cells by Smith-Waterman
 
 macro fill_matrix_sw(i, j)
     esc(quote
-        matrix.insert[i, j] = model.gap_extend +
-                              max(matrix.insert[i - 1, j],
-                                  matrix.match[i - 1, j] + model.gap_open)
-
-        matrix.delete[i, j] = model.gap_extend +
-                              max(matrix.delete[i, j - 1],
-                                  matrix.match[i, j - 1] + model.gap_open)
-
         matrix.match[i, j] = max(0,
                                  matrix.insert[i, j],
                                  matrix.delete[i, j],
@@ -70,6 +68,7 @@ function hstep!(::GlobalAlignment, matrix::AlignmentMatrix, model::AffineGapScor
     matrix.match[i, 1] = model.gap_open + (i - 1) * model.gap_extend
     for j in 2:matrix.real_width
         c, d = hchar, wseq[j - 1]
+        @fill_matrix i j
         @fill_matrix_nw i j
     end
 end
@@ -81,6 +80,7 @@ function wstep!(::GlobalAlignment, matrix::AlignmentMatrix, model::AffineGapScor
     matrix.match[1, j] = model.gap_open + (j - 1) * model.gap_extend
     for i in 2:matrix.real_height
         c, d = hseq[i - 1], wchar
+        @fill_matrix i j
         @fill_matrix_nw i j
     end
 end
@@ -94,6 +94,7 @@ function hstep!(::SemiGlobalAlignment, matrix::AlignmentMatrix, model::AffineGap
     matrix.match[i, 1] = 0
     for j in 2:matrix.real_width
         c, d = hchar, wseq[j - 1]
+        @fill_matrix i j
         @fill_matrix_nw i j
     end
 end
@@ -105,6 +106,7 @@ function wstep!(::SemiGlobalAlignment, matrix::AlignmentMatrix, model::AffineGap
     matrix.match[1, j] = 0
     for i in 2:matrix.real_height
         c, d = hseq[i - 1], wchar
+        @fill_matrix i j
         @fill_matrix_nw i j
     end
 end
@@ -118,6 +120,7 @@ function hstep!(::LocalAlignment, matrix::AlignmentMatrix, model::AffineGapScore
     matrix.match[i, 1] = 0
     for j in 2:matrix.real_width
         c, d = hchar, wseq[j - 1]
+        @fill_matrix i j
         @fill_matrix_sw i j
     end
 end
@@ -129,6 +132,7 @@ function wstep!(::LocalAlignment, matrix::AlignmentMatrix, model::AffineGapScore
     matrix.match[1, j] = 0
     for i in 2:matrix.real_height
         c, d = hseq[i - 1], wchar
+        @fill_matrix i j
         @fill_matrix_sw i j
     end
 end
