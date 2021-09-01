@@ -28,7 +28,7 @@ function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, se
 
         if isterminal(node)
             sequence2 = current_sequence[1:current_depth]
-            callback(traceback(altype, matrix, sequence, sequence2))
+            callback(only_score -> traceback(altype, matrix, sequence, sequence2; only_score = only_score))
         end
 
         if isfork(node) || isleaf(node)
@@ -47,7 +47,7 @@ function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, se
     S2      = Vector{C}
     results = Vector{PairwiseAlignmentResult{Int, S1, S2}}()
 
-    callback(result) = push!(results, result)
+    callback(get_result) = push!(results, get_result(false))
     triealign(altype, trie, sequence, model, callback)
 
     return results

@@ -35,8 +35,12 @@ macro anchor(ex)
     end)
 end
 
-function traceback(::GlobalAlignment, matrix::AlignmentMatrix, s, t)
+function traceback(::GlobalAlignment, matrix::AlignmentMatrix, s, t; only_score = false)
     score = matrix.match[matrix.real_height, matrix.real_width]
+    if only_score
+        return score
+    end
+
     i, j = Int(matrix.real_height), Int(matrix.real_width)
     anchors = Vector{AlignmentAnchor}()
 
@@ -59,7 +63,7 @@ function traceback(::GlobalAlignment, matrix::AlignmentMatrix, s, t)
     PairwiseAlignmentResult(score, true, AlignedSequence(s, anchors), t)
 end
 
-function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t)
+function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t; only_score = false)
     score = 0
     i, j  = 0, 0
     for i_ in 1:matrix.real_height
@@ -69,6 +73,9 @@ function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t)
                 i, j = i_, j_
             end
         end
+    end
+    if only_score
+        return score
     end
 
     anchors = Vector{AlignmentAnchor}()
@@ -92,7 +99,7 @@ function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t)
     PairwiseAlignmentResult(score, true, AlignedSequence(s, anchors), t)
 end
 
-function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t)
+function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t; only_score = false)
     score = 0
     i, j  = 0, 0
     for i_ in 1:matrix.real_height
@@ -109,8 +116,15 @@ function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t)
             j = j_
         end
     end
-    last_anchor = AlignmentAnchor((length(s), length(t)), 
-                                  i == matrix.real_height ? OP_DELETE : OP_INSERT)
+    if only_score
+        return score
+    end
+
+    end_gaps = i != matrix.real_height || j != matrix.real_width
+    if end_gaps
+        last_anchor = AlignmentAnchor((length(s), length(t)), 
+                                      i == matrix.real_height ? OP_DELETE : OP_INSERT)
+    end
 
     anchors = Vector{AlignmentAnchor}()
 
@@ -129,7 +143,10 @@ function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t)
         end
     end
     @finish_traceback
-    push!(anchors, last_anchor)
+
+    if end_gaps
+        push!(anchors, last_anchor)
+    end
 
     PairwiseAlignmentResult(score, true, AlignedSequence(s, anchors), t)
 end
