@@ -76,7 +76,7 @@ macro fill_iterator_state(node_id)
 end
 
 function Base.iterate(t::Trie{C,T}) where {C,T}
-    state = Tuple{Char, TrieNodeID}[]
+    state = Tuple{C, TrieNodeID}[]
 
     @fill_iterator_state 1
     return iterate(t, state)

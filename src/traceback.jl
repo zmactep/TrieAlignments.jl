@@ -64,7 +64,7 @@ function traceback(::GlobalAlignment, matrix::AlignmentMatrix, s, t; only_score 
 end
 
 function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t; only_score = false)
-    score = 0
+    score = typemin(Int)
     i, j  = 0, 0
     for i_ in 1:matrix.real_height
         for j_ in 1:matrix.real_width
@@ -100,7 +100,7 @@ function traceback(::LocalAlignment, matrix::AlignmentMatrix, s, t; only_score =
 end
 
 function traceback(::SemiGlobalAlignment, matrix::AlignmentMatrix, s, t; only_score = false)
-    score = 0
+    score = typemin(Int)
     i, j  = 0, 0
     for i_ in 1:matrix.real_height
         if matrix.match[i_, matrix.real_width] > score
