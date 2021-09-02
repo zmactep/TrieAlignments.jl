@@ -2,7 +2,7 @@ module TrieAlignments
 
 export TrieNodeID, TrieNode, Trie,
        isroot, isleaf, isfork, isterminal,
-       value, parentid,
+       value, upper,
        AlignmentMatrix,
        triealign
 

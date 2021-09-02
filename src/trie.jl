@@ -2,11 +2,12 @@ TrieNodeID = UInt
 
 mutable struct TrieNode{C,T}
     value::Union{T,Nothing}
+    character::Union{C,Nothing}
     parent::TrieNodeID
     terminal::Bool
     children::Dict{C,TrieNodeID}
 
-    TrieNode{C,T}(parent = 0) where {C,T} = new(nothing, parent, false, Dict{C,TrieNodeID}())
+    TrieNode{C,T}(character = nothing, parent = 0) where {C,T} = new(nothing, character, parent, false, Dict{C,TrieNodeID}())
 end
 
 function Base.setproperty!(n::TrieNode{C,T}, name::Symbol, v) where {C,T}
@@ -32,7 +33,7 @@ isterminal(n::TrieNode{C, T}) where {C, T} = n.terminal
 
 value(n::TrieNode{C, T}) where {C, T} = n.value
 
-parentid(n::TrieNode{C, T}) where {C, T} = n.parent
+upper(n::TrieNode{C, T}) where {C, T} = (n.character, n.parent)
 
 mutable struct Trie{C,T}
     nodes::Vector{TrieNode{C,T}}
@@ -59,7 +60,7 @@ function Base.push!(t::Trie{C,T}, key, value::T) where {C,T}
     for c in key
         node = t[node_id]
         if !haskey(node, c)
-            push!(t.nodes, TrieNode{C,T}(node_id))
+            push!(t.nodes, TrieNode{C,T}(c, node_id))
             node[c] = length(t)
         end
         node_id = node[c]
