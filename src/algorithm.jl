@@ -1,5 +1,5 @@
 function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, sequence::S1, model::AffineGapScoreModel{Int}, callback::Function) where {C, T, S1}
-    matrix  = AlignmentMatrix(length(sequence) + 1, trie.max_depth + 1)
+    matrix = AlignmentMatrix(length(sequence) + 1, trie.max_depth + 1)
 
     for c in sequence
         hstep!(altype, matrix, model, "", c)
@@ -28,7 +28,8 @@ function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, se
 
         if isterminal(node)
             sequence2 = current_sequence[1:current_depth]
-            callback(only_score -> traceback(altype, matrix, sequence, sequence2; only_score = only_score))
+            value = trie[node_id].value
+            callback(only_score -> traceback(altype, matrix, sequence, sequence2; only_score = only_score), value)
         end
 
         if isfork(node) || isleaf(node)
@@ -47,8 +48,17 @@ function triealign(altype::BioAlignments.AbstractAlignment, trie::Trie{C, T}, se
     S2      = Vector{C}
     results = Vector{PairwiseAlignmentResult{Int, S1, S2}}()
 
-    callback(get_result) = push!(results, get_result(false))
+    callback(get_result, _) = push!(results, get_result(false))
     triealign(altype, trie, sequence, model, callback)
 
     return results
+end
+
+function triealign(altype::BioAlignments.AbstractAlignment, trie1::Trie{C1, T1}, trie2::Trie{C2, T2}, model::AffineGapScoreModel{Int}, callback::Function) where {C1, C2, T1, T2}
+    matrix  = AlignmentMatrix(trie1.max_depth + 1, trie2.max_depth + 1)
+
+    # trie1 -> hstep/hpop
+    # trie2 -> wstep/wpop
+
+    
 end
