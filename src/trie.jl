@@ -32,6 +32,8 @@ isterminal(n::TrieNode{C, T}) where {C, T} = n.terminal
 
 value(n::TrieNode{C, T}) where {C, T} = n.value
 
+parentid(n::TrieNode{C, T}) where {C, T} = n.parent
+
 mutable struct Trie{C,T}
     nodes::Vector{TrieNode{C,T}}
     max_depth::UInt
@@ -42,6 +44,8 @@ end
 Trie() = Trie{Char,Any}()
 
 root(t::Trie{C,T}) where {C,T} = t[1]
+
+Base.show(io::Core.IO, trie::Trie{C, T}) where {C, T} = write(io, "Trie{$(C), $(T)}($(trie.max_depth))")
 
 Base.getindex(t::Trie{C,T}, key) where {C,T} = t.nodes[key]
 Base.setindex!(t::Trie{C,T}, value::T, key) where {C,T} = push!(t, key, value)
@@ -65,6 +69,8 @@ function Base.push!(t::Trie{C,T}, key, value::T) where {C,T}
     end
     t[node_id].terminal = true
     t[node_id].value = value
+
+    node_id
 end
 
 macro fill_iterator_state(node_id)
